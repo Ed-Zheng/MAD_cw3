@@ -39,24 +39,6 @@ class DatabaseHelper {
     return await _db.query(table);
   }
 
-  Future<Map<String, dynamic>?> queryId(int id) async {
-    final results = await _db.query(
-      table,
-      where: '$columnId = ?',
-      whereArgs: [id],
-    );
-    if (results.isNotEmpty) {
-      return results.first;
-    } else {
-      return null;
-    }
-  }
-
-  Future<int> queryRowCount() async {
-    final results = await _db.rawQuery('SELECT COUNT(*) FROM $table');
-    return Sqflite.firstIntValue(results) ?? 0;
-  }
-
   Future<int> update(Map<String, dynamic> row) async {
     int id = row[columnId];
     return await _db.update(
