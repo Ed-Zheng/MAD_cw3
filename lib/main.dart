@@ -9,22 +9,52 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkMode = false;
+
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SQFlite Task List',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(),
       debugShowCheckedModeBanner: false,
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: MyHomePage(
+        isDarkMode: _isDarkMode,
+        toggleTheme: _toggleTheme,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final bool isDarkMode;
+  final VoidCallback toggleTheme;
+
+  const MyHomePage({
+    super.key,
+    required this.isDarkMode,
+    required this.toggleTheme,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -92,6 +122,14 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('Task List (SQFLite)'),
         actions: [
           IconButton(
+            icon: Icon(widget.isDarkMode
+              ? Icons.wb_sunny
+              : Icons.dark_mode_outlined
+            ),
+            onPressed: widget.toggleTheme,
+          ),
+
+          IconButton(
             icon: const Icon(Icons.delete_sweep),
             onPressed: _deleteAll,
           ),
@@ -114,11 +152,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
 
                 const SizedBox(width: 10),
-                
+
                 ElevatedButton(
                   onPressed: _insert,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 58, 255, 58)),
+                    backgroundColor: const Color.fromARGB(255, 58, 255, 58),
+                    foregroundColor: Colors.black,
+                  ),
                   child: const Text('Add'),
                 ),
               ],
@@ -128,32 +168,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
             Expanded(
               child: _tasks.isEmpty
-                ? const Center(child: Text('No tasks added yet.'))
-                : ListView.builder(
-                    itemCount: _tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = _tasks[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 5),
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: task[DatabaseHelper.columnCompleted] == 1,
-                            onChanged: (_) => _toggle(task),
-                          ),
+                  ? const Center(child: Text('No tasks added yet.'))
+                  : ListView.builder(
+                      itemCount: _tasks.length,
+                      itemBuilder: (context, index) {
+                        final task = _tasks[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          child: ListTile(
+                            leading: Checkbox(
+                              value: task[DatabaseHelper.columnCompleted] == 1,
+                              onChanged: (_) => _toggle(task),
+                            ),
 
-                          title: Text(
-                            task[DatabaseHelper.columnName]
+                            title: Text(
+                              task[DatabaseHelper.columnName]
+                            ),
+
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () =>
+                                  _delete(task[DatabaseHelper.columnId]),
+                            ),
                           ),
-                          
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () =>
-                                _delete(task[DatabaseHelper.columnId]),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
