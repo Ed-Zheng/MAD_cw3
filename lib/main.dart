@@ -64,11 +64,27 @@ class _MyHomePageState extends State<MyHomePage> {
     await _refreshTasks();
   }
 
+  void _delete(int id) async {
+    await dbHelper.delete(id);
+    await _refreshTasks();
+  }
+
+  void _deleteAll() async {
+    await dbHelper.deleteAll();
+    await _refreshTasks();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Task List (SQLite)'),
+        title: const Text('Task List (SQFLite)'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            onPressed: _deleteAll,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -111,6 +127,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: ListTile(
                             title: Text(
                               task[DatabaseHelper.columnName]
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () =>
+                                  _delete(task[DatabaseHelper.columnId]),
                             ),
                           ),
                         );
