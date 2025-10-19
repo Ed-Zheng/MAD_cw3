@@ -74,6 +74,17 @@ class _MyHomePageState extends State<MyHomePage> {
     await _refreshTasks();
   }
 
+  void _toggle(Map<String, dynamic> task) async {
+    final updated = {
+      DatabaseHelper.columnId: task[DatabaseHelper.columnId],
+      DatabaseHelper.columnName: task[DatabaseHelper.columnName],
+      DatabaseHelper.columnCompleted:
+          (task[DatabaseHelper.columnCompleted] == 1) ? 0 : 1,
+    };
+    await dbHelper.update(updated);
+    await _refreshTasks();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,26 +128,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
             Expanded(
               child: _tasks.isEmpty
-                  ? const Center(child: Text('No tasks added yet.'))
-                  : ListView.builder(
-                      itemCount: _tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = _tasks[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          child: ListTile(
-                            title: Text(
-                              task[DatabaseHelper.columnName]
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () =>
-                                  _delete(task[DatabaseHelper.columnId]),
-                            ),
+                ? const Center(child: Text('No tasks added yet.'))
+                : ListView.builder(
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = _tasks[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: task[DatabaseHelper.columnCompleted] == 1,
+                            onChanged: (_) => _toggle(task),
                           ),
-                        );
-                      },
-                    ),
+
+                          title: Text(
+                            task[DatabaseHelper.columnName]
+                          ),
+                          
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () =>
+                                _delete(task[DatabaseHelper.columnId]),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
             ),
           ],
         ),
